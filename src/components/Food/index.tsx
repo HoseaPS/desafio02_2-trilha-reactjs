@@ -1,48 +1,30 @@
-import { useState } from 'react';
-import { FiEdit3, FiTrash } from 'react-icons/fi';
+import { useState } from "react";
+import { FiEdit3, FiTrash } from "react-icons/fi";
 
-import { Container } from './styles';
-import api from '../../services/api';
-
-interface Food {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  price: number;
-  available: boolean
-}
+import { Container } from "./styles";
+import api from "../../services/api";
+import { FoodModel } from "../../pages/Dashboard";
 
 interface FoodProps {
-  food: Food;
-  handleEditFood: (food: Food) => void;
+  food: FoodModel;
   handleDelete: (id: number) => void;
+  handleEditFood: (food: FoodModel) => void;
 }
 
-interface Availability {
-  isAvailable: boolean;
-}
-
-export function Food({food, handleEditFood, handleDelete}: FoodProps) {
-  const [foodState, setFoodState] = useState<Availability>({isAvailable: food.available});
-
-  function setEditingFood() {
-    handleEditFood(food);
-  }
+export function Food(props: FoodProps) {
+  const { food, handleDelete, handleEditFood } = props;
+  const [isAvailable, setIsAvailable] = useState(food.available);
 
   async function toggleAvailable() {
-    const availability = !foodState.isAvailable;
-
     await api.put(`/foods/${food.id}`, {
       ...food,
-      available: availability,
+      available: !isAvailable,
     });
-
-    setFoodState({ isAvailable: availability });
+    setIsAvailable(!isAvailable);
   }
 
-  return(
-    <Container available={foodState.isAvailable}>
+  return (
+    <Container available={isAvailable}>
       <header>
         <img src={food.image} alt={food.name} />
       </header>
@@ -58,7 +40,7 @@ export function Food({food, handleEditFood, handleDelete}: FoodProps) {
           <button
             type="button"
             className="icon"
-            onClick={setEditingFood}
+            onClick={() => handleEditFood(food)}
             data-testid={`edit-food-${food.id}`}
           >
             <FiEdit3 size={20} />
@@ -75,13 +57,13 @@ export function Food({food, handleEditFood, handleDelete}: FoodProps) {
         </div>
 
         <div className="availability-container">
-          <p>{foodState.isAvailable ? 'Disponível' : 'Indisponível'}</p>
+          <p>{isAvailable ? "Disponível" : "Indisponível"}</p>
 
           <label htmlFor={`available-switch-${food.id}`} className="switch">
             <input
               id={`available-switch-${food.id}`}
               type="checkbox"
-              checked={foodState.isAvailable}
+              checked={isAvailable}
               onChange={toggleAvailable}
               data-testid={`change-status-food-${food.id}`}
             />
